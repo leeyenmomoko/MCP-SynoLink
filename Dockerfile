@@ -19,7 +19,7 @@ COPY --from=builder /app/package-lock.json /app/package-lock.json
 
 ENV NODE_ENV=production
 
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 
 RUN chmod +x /app/dist/index.js
 
