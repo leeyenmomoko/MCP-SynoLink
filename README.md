@@ -95,9 +95,71 @@ Then add this to your `claude_desktop_config.json`:
 }
 ```
 
+### Docker 環境變數
+
+從版本 1.1.0 開始，SynoLink 支援通過環境變數設置 Synology DSM 的連接資訊。可以使用以下環境變數：
+
+- `SYNO_URL`: Synology DSM 的 URL，例如 `https://your-synology-url:port`
+- `SYNO_USERNAME`: Synology DSM 的用戶名
+- `SYNO_PASSWORD`: Synology DSM 的密碼
+- `SYNO_API_VERSION`: Synology DSM 的 API 版本，默認為 `7`
+
+#### 使用 Docker 環境變數
+
+```bash
+docker run -i --rm \
+  -e SYNO_URL="https://your-synology-url:port" \
+  -e SYNO_USERNAME="your-username" \
+  -e SYNO_PASSWORD="your-password" \
+  -e SYNO_API_VERSION="7" \
+  mcp/synolink
+```
+
+#### 使用 Docker Compose
+
+```yaml
+version: "3"
+services:
+  synolink:
+    image: mcp/synolink
+    environment:
+      - SYNO_URL=https://your-synology-url:port
+      - SYNO_USERNAME=your-username
+      - SYNO_PASSWORD=your-password
+      - SYNO_API_VERSION=7
+```
+
+#### 在 Claude Desktop 中使用
+
+在 `claude_desktop_config.json` 中：
+
+```json
+{
+  "mcpServers": {
+    "synolink": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "SYNO_URL=https://your-synology-url:port",
+        "-e",
+        "SYNO_USERNAME=your-username",
+        "-e",
+        "SYNO_PASSWORD=your-password",
+        "mcp/synolink"
+      ]
+    }
+  }
+}
+```
+
+**注意**：命令行參數的優先級高於環境變數。如果同時提供了命令行參數和環境變數，將使用命令行參數。
+
 ### Security Note
 
-Always be careful with credentials. The current implementation sends the password as a command-line argument, which may be visible in process listings. For improved security in a production environment, consider implementing alternative authentication methods.
+Always be careful with credentials. The current implementation sends the password as a command-line argument or environment variable, which may be visible in process listings or environment inspection. For improved security in a production environment, consider implementing alternative authentication methods.
 
 ## API Documentation
 
@@ -106,6 +168,7 @@ The server provides the following tools:
 ### Authentication Tools
 
 - **login**
+
   - Authenticates with the Synology NAS
   - No parameters required (uses credentials from command line)
 
@@ -116,26 +179,31 @@ The server provides the following tools:
 ### File Management Tools
 
 - **list_folders**
+
   - Lists files and folders in a directory
   - Input: `path` (string) - Path to list files from, e.g., '/photos'
 
 - **get_file**
+
   - Gets the content of a file
   - Input: `path` (string) - Full path to the file on Synology NAS
 
 - **upload_file**
+
   - Uploads a file to Synology NAS
   - Inputs:
     - `path` (string) - Destination path on Synology NAS including filename
     - `content` (string) - Content of the file to upload
 
 - **create_folder**
+
   - Creates a new folder
   - Inputs:
     - `path` (string) - Full path to create folder at
     - `name` (string) - Name of the new folder
 
 - **delete_item**
+
   - Deletes a file or folder
   - Input: `path` (string) - Full path to the file or folder to delete
 
@@ -148,16 +216,19 @@ The server provides the following tools:
 ### Search and Information Tools
 
 - **search**
+
   - Searches for files and folders
   - Inputs:
     - `keyword` (string) - Search keyword
     - `path` (string, optional) - Path to search in, defaults to "/"
 
 - **get_share_links**
+
   - Gets or creates sharing links for a file or folder
   - Input: `path` (string) - Path to get share links for
 
 - **get_server_info**
+
   - Gets information about the Synology server
   - No parameters required
 
